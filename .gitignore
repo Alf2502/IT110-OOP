@@ -1,0 +1,10 @@
+/target/
+/build/
+/dist/
+*.class
+*.log
+/nbproject/private/
+
+MotorPH Employee Details.csv
+MotorPH Attendance Record.csv
+admin.csv
