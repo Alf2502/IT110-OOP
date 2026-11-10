@@ -10,123 +10,102 @@ package domain.payroll;
  */
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.Objects;
 
 public final class PayrollResult {
 
     private final String employeeNumber;
-    private final LocalDate payrollDate;
-    private final BigDecimal grossPay;
-    private final BigDecimal totalAllowances;
-    private final BigDecimal totalDeductions;
+    private final PayrollPeriod payrollPeriod;
+    private final LocalDate generatedDate;
+
+    private final PayrollEarnings earnings;
+    private final PayrollDeductions deductions;
+    private final EmployerContributions employerContributions;
+
     private final BigDecimal netPay;
 
     public PayrollResult(
             String employeeNumber,
-            LocalDate payrollDate,
-            BigDecimal grossPay,
-            BigDecimal totalAllowances,
-            BigDecimal totalDeductions) {
+            PayrollPeriod payrollPeriod,
+            LocalDate generatedDate,
+            PayrollEarnings earnings,
+            PayrollDeductions deductions,
+            EmployerContributions employerContributions) {
 
-        this.employeeNumber = requireText(
-                employeeNumber, "Employee number"
-        );
-
-        this.payrollDate = requireNotNull(
-                payrollDate, "Payroll date"
-        );
-
-        this.grossPay = requireNonNegative(
-                grossPay, "Gross pay"
-        );
-
-        this.totalAllowances = requireNonNegative(
-                totalAllowances, "Total allowances"
-        );
-
-        this.totalDeductions = requireNonNegative(
-                totalDeductions, "Total deductions"
-        );
-
-        if (this.totalDeductions.compareTo(this.grossPay) > 0) {
+        if (employeeNumber == null || employeeNumber.isBlank()) {
             throw new IllegalArgumentException(
-                    "Deductions cannot exceed gross pay."
-            );
+                    "Employee number cannot be blank.");
         }
 
-        this.netPay = this.grossPay
-                .subtract(this.totalDeductions)
-                .setScale(2, RoundingMode.HALF_UP);
+        this.employeeNumber = employeeNumber.trim();
+        this.payrollPeriod = Objects.requireNonNull(
+                payrollPeriod, "Payroll period cannot be null.");
+        this.generatedDate = Objects.requireNonNull(
+                generatedDate, "Generated date cannot be null.");
+
+        this.earnings = Objects.requireNonNull(
+                earnings, "Payroll earnings cannot be null.");
+        this.deductions = Objects.requireNonNull(
+                deductions, "Payroll deductions cannot be null.");
+        this.employerContributions = Objects.requireNonNull(
+                employerContributions, "Employer contributions cannot be null.");
+
+        if (deductions.getTotalDeductions()
+                .compareTo(earnings.getGrossCompensation()) > 0) {
+            throw new IllegalArgumentException(
+                    "Total deductions cannot exceed gross compensation.");
+        }
+
+        this.netPay = earnings.getGrossCompensation()
+                .subtract(deductions.getTotalDeductions());
     }
 
     public String getEmployeeNumber() {
         return employeeNumber;
     }
 
-    public LocalDate getPayrollDate() {
-        return payrollDate;
+    public PayrollPeriod getPayrollPeriod() {
+        return payrollPeriod;
     }
 
-    public BigDecimal getGrossPay() {
-        return grossPay;
+    public LocalDate getGeneratedDate() {
+        return generatedDate;
     }
 
-    public BigDecimal getTotalAllowances() {
-        return totalAllowances;
+    public PayrollEarnings getEarnings() {
+        return earnings;
     }
 
-    public BigDecimal getTotalDeductions() {
-        return totalDeductions;
+    public PayrollDeductions getDeductions() {
+        return deductions;
+    }
+
+    public EmployerContributions getEmployerContributions() {
+        return employerContributions;
+    }
+
+    public BigDecimal getGrossCompensation() {
+        return earnings.getGrossCompensation();
+    }
+
+    public BigDecimal getTotalEmployeeDeductions() {
+        return deductions.getTotalDeductions();
     }
 
     public BigDecimal getNetPay() {
         return netPay;
     }
 
-    public boolean isPositiveNetPay() {
-        return netPay.compareTo(BigDecimal.ZERO) > 0;
+    public BigDecimal getTotalEmployerContributions() {
+        return employerContributions.getTotalContributions();
     }
 
     public boolean hasDeductions() {
-        return totalDeductions.compareTo(BigDecimal.ZERO) > 0;
+        return deductions.hasDeductions();
     }
 
-    private static String requireText(
-            String value, String fieldName) {
-
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(
-                    fieldName + " cannot be empty."
-            );
-        }
-
-        return value.trim();
-    }
-
-    private static BigDecimal requireNonNegative(
-            BigDecimal value, String fieldName) {
-
-        requireNotNull(value, fieldName);
-
-        if (value.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException(
-                    fieldName + " cannot be negative."
-            );
-        }
-
-        return value.setScale(2, RoundingMode.HALF_UP);
-    }
-
-    private static <T> T requireNotNull(
-            T value, String fieldName) {
-
-        if (value == null) {
-            throw new IllegalArgumentException(
-                    fieldName + " cannot be null."
-            );
-        }
-
-        return value;
+    public boolean isPositiveNetPay() {
+        return netPay.compareTo(BigDecimal.ZERO) > 0;
     }
 }

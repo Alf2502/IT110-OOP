@@ -31,7 +31,7 @@ public final class Employee extends Person {
     private double phoneAllowance;
     private double clothingAllowance;
     private double grossRate;
-    private double monthlyRate;
+    private double hourlyRate;
 
     public Employee(
             String employeeNumber,
@@ -73,7 +73,7 @@ public final class Employee extends Person {
         setPhoneAllowance(phoneAllowance);
         setClothingAllowance(clothingAllowance);
         setGrossRate(grossRate);
-        setMonthlyRate(monthlyRate);
+        setHourlyRate(monthlyRate);
     }
 
     // Identity
@@ -148,8 +148,8 @@ public final class Employee extends Person {
         return grossRate;
     }
 
-    public double getMonthlyRate() {
-        return monthlyRate;
+    public double getHourlyRate() {
+        return hourlyRate;
     }
 
     public void setBasicSalary(double basicSalary) {
@@ -182,8 +182,8 @@ public final class Employee extends Person {
         );
     }
 
-    public void setMonthlyRate(double monthlyRate) {
-        this.monthlyRate = requireNonNegative(
+    public void setHourlyRate(double monthlyRate) {
+        this.hourlyRate = requireNonNegative(
                 monthlyRate, "Monthly rate"
         );
     }
